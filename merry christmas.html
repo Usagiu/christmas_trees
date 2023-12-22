@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href=" https://cdn-icons-png.flaticon.com/512/2331/2331397.png" type="image/png">
+    <title>Las Christmas Tree</title>
+    <style>
+        body,
+        html {
+            position: relative;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: black;
+            color: white;
+            text-align: center;
+            height: 100%;
+            user-select: none;
+        }
+
+        .tree {
+            margin-top: 5%;
+            font-size: 20px;
+            line-height: 30px;
+        }
+
+        .trunk {
+            display: block;
+            width: 30px;
+            height: 50px;
+            background-color: #663300;
+            margin: 0 auto;
+            margin-top: 10px;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: white;
+            user-select: none;
+            z-index: 9999;
+        }
+
+        .btn {
+            position: absolute;
+            display: inline-block;
+            border-radius: 50%;
+            top: 25px;
+            right: 25px;
+            width: 70px;
+            height: 70px;
+            background-color: #4CAF50;
+            background-image: url("https://imgessl.kugou.com/stdmusic/20200911/20200911183215250273.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 5px solid #FFF;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            outline: none;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn.spin {
+            animation: rotate 3s linear infinite;
+        }
+
+        .musicImg {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .signature {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+        }
+
+        .text {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .red {
+            color: rgba(216, 25, 25, 1)
+        }
+
+        .green {
+            color: #4CAF50
+        }
+    </style>
+</head>
+
+<body>
+    <div id="tree" class="tree"></div>
+    <div class="trunk"></div>
+    <button id="playPauseBtn" onclick="togglePlayPause()" class="btn"></button>
+    <audio autoplay id="audioPlayer"></audio>
+    <div class="signature">
+        <div class="text" style="color: rgba(216, 25, 25, 1)">Create by 长风有序 2023</div>
+        <div class="text" style="color: #4CAF50">Merry christmas</div>
+    </div>
+    <script>
+        const treeElement = document.getElementById('tree');
+        const atoms = ['+', '*', 'o', '.', '~', '^', '⭐️'];  //这是组成树的符号
+        const maxSnowflakes = 300;   //  觉得雪花太多把数字改小
+        const snowflakes = [];
+        const snowChars = ['*', '*', '*']; //这里是雪花的形状 可以改成星号或者任意字符串和数字 比如"W","S","C"
+        const audioUrl = 'https://warpengine-open.oss-cn-shanghai.aliyuncs.com/jinmingtest/putao.mp3';   //这是歌的URL
+
+        const createTree = () => {
+            for (let i = 1; i <= 35; i += 2) {
+                const level = document.createElement('div');
+                for (let j = 0; j < i; j++) {
+                    const atom = atoms[Math.floor(Math.random() * atoms.length)];
+                    const span = document.createElement('span');
+                    span.textContent = atom;
+                    if (atom === 'o') {
+                        span.classList.add('red');
+                    }
+                    else if (atom === '*') {
+                        span.classList.add('green');
+                    }
+
+                    level.appendChild(span);
+                }
+                treeElement.appendChild(level);
+            }
+        }
+
+        const createSnowflakes = () => {
+            for (let i = 0; i < maxSnowflakes; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.classList.add('snowflake');
+                snowflake.innerText = snowChars[Math.floor(Math.random() * snowChars.length)]; 
+                document.body.appendChild(snowflake);
+                snowflakes.push({
+                    element: snowflake,
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    speed: 1 + Math.random() * 3,
+                    drift: 2 * Math.random() - 1
+                });
+            }
+        }
+
+        const updateSnowflakes = () => {
+            snowflakes.forEach(snowflake => {
+                snowflake.y += snowflake.speed;
+                snowflake.x += snowflake.drift;
+                if (snowflake.y > window.innerHeight) {
+                    snowflake.y = -10;
+                    snowflake.x = Math.random() * window.innerWidth;
+                    snowflake.element.innerText = snowChars[Math.floor(Math.random() * snowChars.length)];
+                }
+                snowflake.element.style.top = snowflake.y + 'px';
+                snowflake.element.style.left = snowflake.x + 'px';
+            });
+        }
+
+        const btn = document.getElementById('playPauseBtn');
+        let isPlaying = false;
+
+        const audio = document.getElementById('audioPlayer');
+        audio.src = audioUrl;
+
+        const togglePlayPause = () => {
+            if (isPlaying) {
+                audio.pause();
+                btn.classList.remove('spin');
+            } else {
+                audio.play().then(() => {
+                    btn.classList.add('spin');
+                }).catch(error => {
+                    console.error('Play was prevented:', error);
+                });
+            }
+            isPlaying = !isPlaying;
+        };
+
+        audioPlayer.onended = () => {
+            btn.classList.remove('spin');
+            isPlaying = false;
+        };
+
+        createTree();
+        createSnowflakes();
+
+        setInterval(() => {
+            updateSnowflakes();
+        }, 50);  //50是雪花速度  数字越小雪花越快 数字越大雪花越慢
+    </script>
+</body>
+
+</html>
